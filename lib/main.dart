@@ -1,11 +1,96 @@
 import 'package:flutter/material.dart';
-void main(){runApp(MaterialApp(home:StudioHome(),debugShowCheckedModeBanner:false,theme:ThemeData(brightness:Brightness.dark,scaffoldBackgroundColor:Color(0xFF0A0A0A)))));}
-class StudioHome extends StatefulWidget{@override _StudioHomeState createState()=>_StudioHomeState();}
-class _StudioHomeState extends State<StudioHome>{
-bool isRecording=false;bool cloned=false;String status="CGN GLOBAL - FIRST AI STUDIO";
-@override Widget build(BuildContext context){return Scaffold(appBar:AppBar(title:Text("FACEDROP STUDIO AI",style:TextStyle(fontWeight:FontWeight.bold)),centerTitle:true,backgroundColor:Colors.black),body:ListView(padding:EdgeInsets.all(20),children:[
-Container(padding:EdgeInsets.all(16),decoration:BoxDecoration(gradient:LinearGradient(colors:[Colors.purple.shade800,Colors.black]),borderRadius:BorderRadius.circular(16)),child:Column(children:[Text("CGN RECORDS",style:TextStyle(fontSize:22,fontWeight:FontWeight.w900)),Text(status,style:TextStyle(fontSize:11,color:Colors.purpleAccent))])),SizedBox(height:24),
-Container(padding:EdgeInsets.all(16),decoration:BoxDecoration(color:Colors.white.withOpacity(0.05),borderRadius:BorderRadius.circular(16)),child:Column(children:[Text("STEP 1 - Clone Voice: Yo it's Face",style:TextStyle(fontWeight:FontWeight.bold)),SizedBox(height:16),GestureDetector(onTapDown:(_)=>setState((){isRecording=true;}),onTapUp:(_)=>setState((){isRecording=false;cloned=true;status="Voice Cloned ✅";}),child:Container(width:90,height:90,decoration:BoxDecoration(color:isRecording?Colors.red:Colors.redAccent.withOpacity(0.2),shape:BoxShape.circle,border:Border.all(color:Colors.redAccent,width:3)),child:Icon(Icons.mic,size:40))),SizedBox(height:12),Text(isRecording?"RECORDING...":cloned?"VOICE CLONED ✅":"HOLD TO RECORD",style:TextStyle(fontWeight:FontWeight.bold))])),
-SizedBox(height:16),Container(padding:EdgeInsets.all(16),decoration:BoxDecoration(color:Colors.white.withOpacity(0.05),borderRadius:BorderRadius.circular(16)),child:TextField(maxLines:4,decoration:InputDecoration(hintText:"Niko Thiba but dreamin global...",filled:true,fillColor:Colors.white.withOpacity(0.05),border:OutlineInputBorder(borderRadius:BorderRadius.circular(12))))),
-SizedBox(height:16),ElevatedButton.icon(onPressed:(){},icon:Icon(Icons.play_circle_fill),label:Text("GENERATE SONG + VIDEO"),style:ElevatedButton.styleFrom(backgroundColor:Colors.purpleAccent,minimumSize:Size(double.infinity,50))),Center(child:Text("@facedropstudio",style:TextStyle(color:Colors.white24)))
-]));}}
+
+void main() {
+  runApp(MaterialApp(
+    home: StudioHome(),
+    debugShowCheckedModeBanner: false,
+  ));
+}
+
+class StudioHome extends StatefulWidget {
+  @override
+  _StudioHomeState createState() => _StudioHomeState();
+}
+
+class _StudioHomeState extends State<StudioHome> {
+  bool isRecording = false;
+  bool cloned = false;
+  String status = "Ready to record";
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('FACEDROP STUDIO AI'),
+        backgroundColor: Colors.black,
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Container(
+              padding: EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade900,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              margin: EdgeInsets.all(16),
+              child: Text(
+                'Status: $status',
+                style: const TextStyle(color: Colors.white, fontSize: 16),
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade800,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              margin: EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    isRecording ? 'Recording...' : 'Not Recording',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  Icon(
+                    isRecording ? Icons.mic : Icons.mic_off,
+                    color: isRecording ? Colors.red : Colors.white,
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 16),
+            Container(
+              padding: EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade800,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              margin: EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                cloned ? 'Voice Cloned!' : 'Voice Not Cloned',
+                style: const TextStyle(color: Colors.white),
+              ),
+            ),
+            SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: () {
+                setState(() {
+                  isRecording = !isRecording;
+                  status = isRecording ? 'Recording...' : 'Ready to record';
+                });
+              },
+              icon: Icon(isRecording ? Icons.stop : Icons.play_arrow),
+              label: Text(isRecording ? 'Stop' : 'Start Recording'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.deepPurple,
+                padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
