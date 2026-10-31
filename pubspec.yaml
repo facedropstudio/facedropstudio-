@@ -1,18 +1,15 @@
 name: facedrop_studio
-description: CGN - AI Studio for Artists - Clone voice from 3 words
+description: CGN - AI Studio for Artists - Clone voice
 publish_to: 'none'
 version: 1.0.0+1
+
 environment:
   sdk: '>=3.0.0 <4.0.0'
+
 dependencies:
   flutter:
     sdk: flutter
-  record: ^5.0.4
-  just_audio: ^0.9.36
-  image_picker: ^1.0.7
-  ffmpeg_kit_flutter: ^6.0.3
-  dio: ^5.4.0
-  path_provider: ^2.1.2
-  permission_handler: ^11.3.0
+  cupertino_icons: ^1.0.8
+
 flutter:
   uses-material-design: true
