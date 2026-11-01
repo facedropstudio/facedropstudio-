@@ -1,51 +1,32 @@
-import 'package:flutter/material.dart';
+name: facedrop_studio
+description: CGN Global - Best AI Music Studio in the World
+publish_to: 'none'
+version: 2.0.0+1
 
-void main() {
-  runApp(MaterialApp(
-    home: StudioHome(),
-    debugShowCheckedModeBanner: false,
-  ));
-}
+environment:
+  sdk: '>=3.0.0 <4.0.0'
 
-class StudioHome extends StatefulWidget {
-  @override
-  _StudioHomeState createState() => _StudioHomeState();
-}
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  record: ^6.1.1
+  just_audio: ^0.9.46
+  image_picker: ^1.1.2
+  permission_handler: ^11.3.1
+  path_provider: ^2.1.4
+  path: ^1.9.0
+  shared_preferences: ^2.3.2
+  dio: ^5.7.0
+  flutter_launcher_icons: ^0.14.3
 
-class _StudioHomeState extends State<StudioHome> {
-  bool isRecording = false;
-  String status = "Ready to record";
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icon.png"
+  min_sdk_android: 21
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('FACEDROP STUDIO AI'),
-        backgroundColor: Colors.black,
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('Status: $status', style: TextStyle(fontSize: 20)),
-            SizedBox(height: 20),
-            ElevatedButton.icon(
-              onPressed: () {
-                setState(() {
-                  isRecording = !isRecording;
-                  status = isRecording ? 'Recording...' : 'Ready to record';
-                });
-              },
-              icon: Icon(isRecording ? Icons.stop : Icons.play_arrow),
-              label: Text(isRecording ? 'Stop' : 'Start Recording'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepPurple,
-                padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/
