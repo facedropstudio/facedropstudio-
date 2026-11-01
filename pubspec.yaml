@@ -1,5 +1,5 @@
 name: facedrop_studio
-description: CGN Global - Best AI Music Studio in the World
+description: CGN Global - Best AI Music Studio
 publish_to: 'none'
 version: 2.0.0+1
 
@@ -18,13 +18,6 @@ dependencies:
   path: ^1.9.0
   shared_preferences: ^2.3.2
   dio: ^5.7.0
-  flutter_launcher_icons: ^0.14.3
-
-flutter_launcher_icons:
-  android: "launcher_icon"
-  ios: true
-  image_path: "assets/icon.png"
-  min_sdk_android: 21
 
 flutter:
   uses-material-design: true
