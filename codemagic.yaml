@@ -1,21 +1,172 @@
-workflows:
-  default-workflow:
-    name: Default Workflow
-    instance_type: mac_mini_m2
-    max_build_duration: 60
-    environment:
-      flutter: stable
-      xcode: latest
-    scripts:
-      - name: Fix missing android folder
-        script: |
-          if [ ! -d "android" ]; then
-            echo "Creating android folder..."
-            flutter create --platforms=android .
-          fi
-      - name: Get packages
-        script: flutter pub get
-      - name: Build APK debug
-        script: flutter build apk --debug
-    artifacts:
-      - build/**/*.apk
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:record/record.dart';
+import 'package:just_audio/just_audio.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:dio/dio.dart';
+
+void main() => runApp(FaceDropStudio());
+
+class FaceDropStudio extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'FACEDROP STUDIO AI',
+      theme: ThemeData.dark().copyWith(scaffoldBackgroundColor: Color(0xFF0F0F0F)),
+      home: StudioHome(),
+    );
+  }
+}
+
+class StudioHome extends StatefulWidget {
+  @override
+  _StudioHomeState createState() => _StudioHomeState();
+}
+
+class _StudioHomeState extends State<StudioHome> {
+  final AudioRecorder _recorder = AudioRecorder();
+  final AudioPlayer _player = AudioPlayer();
+  final AudioPlayer _beatPlayer = AudioPlayer();
+  bool isRecording = false;
+  bool isPlaying = false;
+  String? recordedPath;
+  List<String> savedSongs = [];
+  int selectedBeat = 0;
+  List<String> beats = ["Trap - Ombrielle", "Afrobeat - CGN", "Drill - Dark", "LoFi - Night"];
+  double beatVolume = 0.7;
+  double vocalVolume = 1.0;
+
+  @override
+  void initState() {
+    super.initState();
+    requestPerms();
+    loadSongs();
+  }
+
+  Future<void> requestPerms() async {
+    await [Permission.microphone, Permission.storage].request();
+  }
+
+  Future<void> loadSongs() async {
+    final dir = await getApplicationDocumentsDirectory();
+    final files = dir.listSync().where((f) => f.path.endsWith('.m4a')).toList();
+    setState(() => savedSongs = files.map((e) => e.path).toList());
+  }
+
+  Future<void> startRecord() async {
+    if (await _recorder.hasPermission()) {
+      final dir = await getApplicationDocumentsDirectory();
+      final path = "${dir.path}/facedrop_${DateTime.now().millisecondsSinceEpoch}.m4a";
+      await _recorder.start(const RecordConfig(), path: path);
+      if (selectedBeat != 0) {
+        // Play beat while recording
+        // In real app, load beat from assets/beats/beat.mp3
+      }
+      setState(() { isRecording = true; recordedPath = path; });
+    }
+  }
+
+  Future<void> stopRecord() async {
+    final path = await _recorder.stop();
+    setState(() { isRecording = false; recordedPath = path; });
+    loadSongs();
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Saved to Phone: $path")));
+  }
+
+  Future<void> playSong(String path) async {
+    await _player.setFilePath(path);
+    _player.play();
+    setState(() => isPlaying = true);
+  }
+
+  // AI VOICE CLONE - Using ElevenLabs / CGN Cloud
+  Future<void> cloneVoice() async {
+    if (recordedPath == null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Record your voice first!")));
+      return;
+    }
+    showDialog(context: context, builder: (_) => AlertDialog(
+      backgroundColor: Colors.black,
+      title: Text("AI VOICE CLONE - CGN", style: TextStyle(color: Colors.purpleAccent)),
+      content: Column(mainAxisSize: MainAxisSize.min, children: [
+        Text("This will clone your voice and sing Ombrielle!", style: TextStyle(color: Colors.white)),
+        SizedBox(height: 20),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(backgroundColor: Colors.purple),
+          onPressed: () async {
+            // TODO: Connect your AI backend here
+            // Example: Upload recordedPath to your server / ElevenLabs API
+            // Dio().post("https://your-cgn-server.com/clone", data: FormData with file)
+            Navigator.pop(context);
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("AI Cloning... Connect ElevenLabs API key in code!")));
+          },
+          child: Text("CLONE MY VOICE NOW"),
+        )
+      ]),
+    ));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("FACEDROP STUDIO AI", style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 2)), backgroundColor: Colors.black, centerTitle: true),
+      body: Column(
+        children: [
+          // BEATS SECTION
+          Container(height: 80, child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: beats.length,
+            itemBuilder: (c,i) => GestureDetector(
+              onTap: () => setState(() => selectedBeat = i),
+              child: Container(margin: EdgeInsets.all(8), padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                decoration: BoxDecoration(color: selectedBeat==i? Colors.purple : Colors.white10, borderRadius: BorderRadius.circular(20)),
+                child: Column(children: [Icon(Icons.music_note), Text(beats[i], style: TextStyle(fontSize: 12))]),
+              ),
+            ),
+          )),
+          Divider(color: Colors.white10),
+          // WAVE + RECORD
+          Expanded(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+            Icon(isRecording? Icons.mic : Icons.mic_none, size: 100, color: isRecording? Colors.red : Colors.white),
+            SizedBox(height: 20),
+            Text(isRecording? "RECORDING... SING OMBRIELE" : "READY TO RECORD", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: isRecording? Colors.red : Colors.white)),
+            SizedBox(height: 30),
+            Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              Text("Beat Vol"), Slider(value: beatVolume, onChanged: (v)=>setState(()=>beatVolume=v), min: 0, max: 1),
+              Text("Vocal Vol"), Slider(value: vocalVolume, onChanged: (v)=>setState(()=>vocalVolume=v), min: 0, max: 1),
+            ]),
+            SizedBox(height: 20),
+            // RECORD BUTTON
+            GestureDetector(
+              onTap: () => isRecording ? stopRecord() : startRecord(),
+              child: Container(width: 90, height: 90, decoration: BoxDecoration(color: isRecording? Colors.red : Colors.purple, shape: BoxShape.circle, boxShadow: [BoxShadow(color: Colors.purple.withOpacity(0.5), blurRadius: 20)]),
+                child: Icon(isRecording? Icons.stop : Icons.mic, size: 45, color: Colors.white),
+              ),
+            ),
+            SizedBox(height: 20),
+            Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              ElevatedButton.icon(onPressed: cloneVoice, icon: Icon(Icons.face_retouching_natural), label: Text("AI CLONE VOICE"), style: ElevatedButton.styleFrom(backgroundColor: Colors.deepPurple)),
+              SizedBox(width: 10),
+              ElevatedButton.icon(onPressed: () => recordedPath!=null? playSong(recordedPath!) : null, icon: Icon(Icons.play_arrow), label: Text("PLAY LAST"), style: ElevatedButton.styleFrom(backgroundColor: Colors.white24)),
+            ])
+          ])),
+          // SAVED SONGS - PHONE STORAGE
+          Container(height: 160, color: Colors.black, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Padding(padding: EdgeInsets.all(10), child: Text("MY STUDIO - SAVED ON PHONE", style: TextStyle(color: Colors.white54, fontWeight: FontWeight.bold))),
+            Expanded(child: ListView.builder(
+              itemCount: savedSongs.length,
+              itemBuilder: (c,i) => ListTile(
+                leading: Icon(Icons.audio_file, color: Colors.purple),
+                title: Text(savedSongs[i].split('/').last, style: TextStyle(fontSize: 12)),
+                trailing: IconButton(icon: Icon(Icons.play_circle), onPressed: ()=>playSong(savedSongs[i])),
+                onLongPress: () { File(savedSongs[i]).delete(); loadSongs(); },
+              ),
+            ))
+          ]))
+        ],
+      ),
+    );
+  }
+}
